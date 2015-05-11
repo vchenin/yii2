@@ -1,21 +1,6 @@
 #!/bin/sh
 
-getcomposer ()
-{
-    php -r "readfile('https://getcomposer.org/installer');" | php -- "$@"
-}
-
-options ()
-{
-    case "${1:--h}" in
-        -g|--global) getcomposer --install-dir=/usr/local/bin --filename=composer ;;
-        -h|--help) usage ;;
-        -l|--local) getcomposer ;;
-        -o|--options) shift; getcomposer "$@" ;;
-    esac
-}
-
-usage ()
+displayHelp ()
 {
     cat <<__EOT__
 
@@ -31,11 +16,26 @@ Options:
   -o OPTS, --options OPTS   Install composer with specified options.
 
 Options for composer installer:
-      --install-dir=DIR     Specify directory for installation.
       --filename=NAME       Specify the filename (default: composer.phar).
+      --install-dir=DIR     Specify directory for installation.
       --version=VER         Specify release version.
 __EOT__
     exit
 }
 
-[ $# -eq 0 ] && usage || options "$@"
+getComposer ()
+{
+    php -r "readfile('https://getcomposer.org/installer');" | php -- "$@"
+}
+
+operate ()
+{
+    case "${1:--h}" in
+        -g|--global) getComposer --install-dir=/usr/local/bin --filename=composer ;;
+        -h|--help) displayHelp ;;
+        -l|--local) getComposer ;;
+        -o|--options) shift; getComposer "$@" ;;
+    esac
+}
+
+[ $# -eq 0 ] && displayHelp || operate "$@"
