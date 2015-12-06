@@ -148,7 +148,7 @@ php build translation "../docs/guide" "../docs/guide-uk" "Ukrainian guide transl
 - method — метод (обʼєкта/класу);
 - merge — поєднання;
 - Model-View-Controller (MVC) — Модель-Представлення-Контролер (MVC);
-- namespace — простір імен;
+- (sub-)namespace — (під-)простір імен;
 - out of the box — "з коробки";
 - package — пакунок;
 - pagination — розділення на сторінки;

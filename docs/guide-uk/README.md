@@ -36,7 +36,7 @@ All Rights Reserved.
 * [Компоненти додатка](structure-application-components.md)
 * [Контролери](structure-controllers.md)
 * [Моделі](structure-models.md)
-* **TBD** [Представлення](structure-views.md)
+* [Представлення](structure-views.md)
 * **TBD** [Модулі](structure-modules.md)
 * **TBD** [Фільтри](structure-filters.md)
 * **TBD** [Віджети](structure-widgets.md)
