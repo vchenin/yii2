@@ -138,6 +138,85 @@ class FileHelperTest extends TestCase
         }
     }
 
+    public function testCopyDirectoryRecursive()
+    {
+        $srcDirName = 'test_src_dir_rec';
+        $structure = [
+            'directory1' => [
+                'file1.txt' => 'file 1 content',
+                'file2.txt' => 'file 2 content',
+            ],
+            'directory2' => [
+                'file3.txt' => 'file 3 content',
+                'file4.txt' => 'file 4 content',
+            ],
+            'file5.txt' => 'file 5 content',
+        ];
+        $this->createFileStructure([
+            $srcDirName => $structure
+        ]);
+
+        $basePath = $this->testFilePath;
+        $srcDirName = $basePath . DIRECTORY_SEPARATOR . $srcDirName;
+        $dstDirName = $basePath . DIRECTORY_SEPARATOR . 'test_dst_dir';
+
+        FileHelper::copyDirectory($srcDirName, $dstDirName);
+
+        $this->assertFileExists($dstDirName, 'Destination directory does not exist!');
+
+        $checker = function ($structure, $dstDirName) use (&$checker) {
+            foreach ($structure as $name => $content) {
+                if (is_array($content)) {
+                    $checker($content, $dstDirName . DIRECTORY_SEPARATOR . $name);
+                } else {
+                    $fileName = $dstDirName . DIRECTORY_SEPARATOR . $name;
+                    $this->assertFileExists($fileName);
+                    $this->assertEquals($content, file_get_contents($fileName), 'Incorrect file content!');
+                }
+            }
+        };
+
+        $checker($structure, $dstDirName);
+    }
+
+    public function testCopyDirectoryNotRecursive()
+    {
+        $srcDirName = 'test_src_dir_not_rec';
+        $structure = [
+            'directory1' => [
+                'file1.txt' => 'file 1 content',
+                'file2.txt' => 'file 2 content',
+            ],
+            'directory2' => [
+                'file3.txt' => 'file 3 content',
+                'file4.txt' => 'file 4 content',
+            ],
+            'file5.txt' => 'file 5 content',
+        ];
+        $this->createFileStructure([
+            $srcDirName => $structure
+        ]);
+
+        $basePath = $this->testFilePath;
+        $srcDirName = $basePath . DIRECTORY_SEPARATOR . $srcDirName;
+        $dstDirName = $basePath . DIRECTORY_SEPARATOR . 'test_dst_dir';
+
+        FileHelper::copyDirectory($srcDirName, $dstDirName, ['recursive' => false]);
+
+        $this->assertFileExists($dstDirName, 'Destination directory does not exist!');
+
+        foreach ($structure as $name => $content) {
+            $fileName = $dstDirName . DIRECTORY_SEPARATOR . $name;
+
+            if (is_array($content)) {
+                $this->assertFileNotExists($fileName);
+            } else {
+                $this->assertFileExists($fileName);
+                $this->assertEquals($content, file_get_contents($fileName), 'Incorrect file content!');
+            }
+        }
+    }
+
     /**
      * @depends testCopyDirectory
      */
@@ -172,6 +251,57 @@ class FileHelperTest extends TestCase
         $this->assertFileMode($dirMode, $dstDirName, 'Destination directory has wrong mode!');
         $this->assertFileMode($dirMode, $dstDirName . DIRECTORY_SEPARATOR . $subDirName, 'Copied sub directory has wrong mode!');
         $this->assertFileMode($fileMode, $dstDirName . DIRECTORY_SEPARATOR . $fileName, 'Copied file has wrong mode!');
+    }
+
+    /**
+     * @see https://github.com/yiisoft/yii2/issues/10710
+     */
+    public function testCopyDirectoryToItself()
+    {
+        $dirName = 'test_dir';
+
+        $this->createFileStructure([
+            $dirName => [],
+        ]);
+
+        $this->setExpectedException('yii\base\InvalidParamException');
+
+        $dirName = $this->testFilePath . DIRECTORY_SEPARATOR . 'test_dir';
+        FileHelper::copyDirectory($dirName, $dirName);
+    }
+
+    /**
+     * @see https://github.com/yiisoft/yii2/issues/10710
+     */
+    public function testCopyDirToSubdirOfItself()
+    {
+        $this->createFileStructure([
+            'data' => [],
+            'backup' => ['data' => []]
+        ]);
+
+        $this->setExpectedException('yii\base\InvalidParamException');
+
+        FileHelper::copyDirectory(
+            $this->testFilePath . DIRECTORY_SEPARATOR . 'backup',
+            $this->testFilePath . DIRECTORY_SEPARATOR . 'backup' . DIRECTORY_SEPARATOR . 'data'
+        );
+    }
+
+    /**
+     * @see https://github.com/yiisoft/yii2/issues/10710
+     */
+    public function testCopyDirToAnotherWithSameName()
+    {
+        $this->createFileStructure([
+            'data' => [],
+            'backup' => ['data' => []]
+        ]);
+
+        FileHelper::copyDirectory(
+            $this->testFilePath . DIRECTORY_SEPARATOR . 'data',
+            $this->testFilePath . DIRECTORY_SEPARATOR . 'backup' . DIRECTORY_SEPARATOR . 'data'
+        );
     }
 
     public function testRemoveDirectory()

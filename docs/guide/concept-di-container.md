@@ -14,7 +14,7 @@ dependency injection:
 
 * Constructor injection;
 * Setter and property injection;
-* PHP callable injection.
+* PHP callable injection;
 
 
 ### Constructor Injection <span id="constructor-injection"></span>
@@ -302,6 +302,8 @@ You can still override the value set via DI container, though:
 ```php
 echo \yii\widgets\LinkPager::widget(['maxButtonCount' => 20]);
 ```
+
+> Tip: no matter which value type it is, it will be overwritten so be careful with option arrays. They won't be merged.
 
 Another example is to take advantage of the automatic constructor injection of the DI container.
 Assume your controller class depends on some other objects, such as a hotel booking service. You
